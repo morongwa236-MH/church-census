@@ -1,659 +1,496 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f3f4f6;
-        }
-        .admin-card {
-            background-color: white;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            border-radius: 1rem;
-            padding: 1.5rem;
-        }
-        .loading {
-            border: 4px solid rgba(0, 0, 0, 0.1);
-            border-left-color: #1d4ed8;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        .text-sm-condensed {
-            font-size: 0.8rem;
-        }
-        .text-md-condensed {
-            font-size: 0.9rem;
-        }
-        .modal {
-            background-color: rgba(0, 0, 0, 0.5);
-        }
-        .btn {
-            @apply px-4 py-2 rounded-xl font-semibold;
-        }
-        .btn-blue {
-            @apply bg-blue-600 text-white hover:bg-blue-700 transition-colors duration-200;
-        }
-        .btn-red {
-            @apply bg-red-600 text-white hover:bg-red-700 transition-colors duration-200;
-        }
-        .btn-green {
-            @apply bg-green-600 text-white hover:bg-green-700 transition-colors duration-200;
-        }
-        .btn-gray {
-            @apply bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors duration-200;
-        }
-        .modal-body-content {
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-        .form-section {
-            border-radius: 1rem;
-            padding: 2rem;
-            margin-bottom: 2rem;
-        }
-        .card {
-            background-color: white;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            border-radius: 1rem;
-            padding: 1.5rem;
-            margin-top: 1.5rem;
-        }
-        .bg-gradient-blue {
-            background: linear-gradient(135deg, #1d4ed8, #3b82f6);
-        }
-        .bg-gradient-green {
-            background: linear-gradient(135deg, #059669, #10b981);
-        }
-        .input-field {
-            @apply w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+    .admin-card { background-color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-radius: 1rem; padding: 1.5rem; }
+    .loading { border: 4px solid rgba(0,0,0,0.1); border-left-color: #1d4ed8; border-radius: 50%; width:24px; height:24px; animation: spin 1s linear infinite;}
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .text-sm-condensed { font-size:0.8rem; line-height:1.2; }
+    /* modal wide */
+    .modal-large { width: 100%; max-width: 900px; max-height: 90vh; overflow-y: auto; }
+  </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+<body class="p-8 md:p-12">
+  <div class="max-w-6xl mx-auto space-y-8">
+    <header class="text-center">
+      <h1 class="text-3xl font-bold text-gray-800">Admin Dashboard</h1>
+      <p class="text-gray-600">Manage census records for Our Lady of Fatima Shrine</p>
+    </header>
 
-    <!-- Main Dashboard Card -->
-    <div class="container mx-auto p-4 md:p-8">
-        <div class="admin-card">
-            <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">Admin Dashboard</h1>
-            
-            <!-- Search and Filter Section -->
-            <div class="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
-                <div class="w-full md:w-2/3">
-                    <div class="relative">
-                        <input type="text" id="searchInput" placeholder="Search by name, block, or address..." class="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                    </div>
-                </div>
-                <div class="w-full md:w-1/3">
-                    <button id="searchBtn" class="w-full btn btn-blue">Search</button>
-                </div>
-            </div>
-
-            <!-- Stats Section -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6 text-center">
-                <div class="p-4 bg-blue-500 text-white rounded-xl shadow-md">
-                    <p class="text-2xl font-bold" id="totalHouseholds">...</p>
-                    <p class="text-sm">Households</p>
-                </div>
-                <div class="p-4 bg-green-500 text-white rounded-xl shadow-md">
-                    <p class="text-2xl font-bold" id="totalMembers">...</p>
-                    <p class="text-sm">Members</p>
-                </div>
-                <div class="p-4 bg-indigo-500 text-white rounded-xl shadow-md">
-                    <p class="text-2xl font-bold" id="totalChildren">...</p>
-                    <p class="text-sm">Children</p>
-                </div>
-            </div>
-
-            <!-- Record List Section -->
-            <div id="recordList" class="flex flex-col gap-4">
-                <div class="text-center text-gray-500">Loading records...</div>
-            </div>
-            
-            <!-- Message box for delete/edit actions -->
-            <div id="messageBox" class="hidden fixed top-0 left-0 w-full h-full flex items-center justify-center z-50">
-                <div class="bg-white p-6 rounded-lg shadow-xl text-center max-w-sm mx-auto">
-                    <p id="messageText" class="text-lg font-semibold mb-4"></p>
-                    <div id="messageActions" class="flex justify-center gap-4">
-                        <button id="confirmBtn" class="btn btn-blue">Confirm</button>
-                        <button id="cancelBtn" class="btn btn-gray">Cancel</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <!-- Search and Filter Section -->
+    <div class="admin-card">
+      <h2 class="text-xl font-bold mb-4">Search Records</h2>
+      <div class="flex flex-col sm:flex-row gap-4">
+        <input type="text" id="searchInput" placeholder="Search by First name, Last name, Block or Address" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300" />
+        <button id="searchBtn" class="px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700">Search</button>
+        <button id="viewAllBtn" class="px-6 py-2 bg-gray-500 text-white font-semibold rounded-lg hover:bg-gray-600">View All</button>
+      </div>
     </div>
 
-    <!-- Modal for viewing and editing records -->
-    <div id="recordModal" class="modal fixed inset-0 flex items-center justify-center p-4 hidden z-50">
-        <div class="modal-content admin-card w-full max-w-4xl max-h-screen overflow-y-auto relative">
-            <button id="closeModalBtn" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-2xl"><i class="fas fa-times"></i></button>
-            
-            <!-- View Mode -->
-            <div id="viewMode" class="modal-body-content">
-                <h2 class="text-2xl font-bold mb-4">Record Details</h2>
-                <div id="modalContent"></div>
-                <div class="flex justify-end gap-4 mt-6">
-                    <button id="editBtn" class="btn btn-blue"><i class="fas fa-edit mr-2"></i>Edit</button>
-                    <button id="deleteBtn" class="btn btn-red"><i class="fas fa-trash-alt mr-2"></i>Delete</button>
-                    <button id="printBtn" class="btn btn-gray"><i class="fas fa-print mr-2"></i>Print</button>
-                </div>
-            </div>
-
-            <!-- Edit Mode Form -->
-            <div id="editMode" class="modal-body-content hidden">
-                <h2 class="text-2xl font-bold mb-4">Edit Record</h2>
-                <form id="editForm" class="space-y-6">
-                    <!-- Household Section -->
-                    <div class="card bg-gradient-blue text-white">
-                        <h2 class="text-2xl font-semibold mb-4">Household Information</h2>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label for="editBlockName" class="block text-sm font-medium mb-1">Block Name</label>
-                                <input type="text" id="editBlockName" name="BlockName" required class="input-field text-black">
-                            </div>
-                            <div>
-                                <label for="editResidentialAddress" class="block text-sm font-medium mb-1">Residential Address</label>
-                                <input type="text" id="editResidentialAddress" name="ResidentialAddress" required class="input-field text-black">
-                            </div>
-                            <div>
-                                <label for="editContactInformation" class="block text-sm font-medium mb-1">Contact Information</label>
-                                <input type="text" id="editContactInformation" name="ContactInformation" required class="input-field text-black">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Members Section -->
-                    <div id="editMembersContainer">
-                        <h3 class="text-xl font-semibold mb-4 text-gray-800">Members</h3>
-                        <div class="space-y-6">
-                            <!-- Member forms will be dynamically added here -->
-                        </div>
-                    </div>
-
-                    <!-- Children Section -->
-                    <div id="editChildrenContainer">
-                        <h3 class="text-xl font-semibold mb-4 text-gray-800">Children (Under 18)</h3>
-                        <div class="space-y-6">
-                            <!-- Children forms will be dynamically added here -->
-                        </div>
-                    </div>
-
-                    <div class="flex justify-end gap-4 mt-6">
-                        <button type="submit" class="btn btn-green"><i class="fas fa-save mr-2"></i>Save Changes</button>
-                        <button type="button" id="cancelEditBtn" class="btn btn-gray"><i class="fas fa-times mr-2"></i>Cancel</button>
-                    </div>
-                </form>
-            </div>
-        </div>
+    <!-- Counts -->
+    <div class="admin-card grid grid-cols-1 md:grid-cols-3 gap-6">
+      <h2 class="text-xl font-bold col-span-full">Quick Counts</h2>
+      <div class="bg-indigo-100 p-4 rounded-lg flex flex-col justify-center items-center">
+        <p class="text-indigo-800 font-semibold">Total Households</p>
+        <span id="householdCount" class="text-3xl font-bold text-indigo-900">...</span>
+      </div>
+      <div class="bg-indigo-100 p-4 rounded-lg flex flex-col justify-center items-center">
+        <p class="text-indigo-800 font-semibold">Total Members</p>
+        <span id="memberCount" class="text-3xl font-bold text-indigo-900">...</span>
+      </div>
+      <div class="bg-indigo-100 p-4 rounded-lg flex flex-col justify-center items-center">
+        <p class="text-indigo-800 font-semibold">Total Children</p>
+        <span id="childCount" class="text-3xl font-bold text-indigo-900">...</span>
+      </div>
     </div>
-    
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const SPREADSHEET_ID = '1KKkidCjRw5T4tyjC0GcgVtdcELsuX_CYgNtScmGfYbo';
-            // Replace with your deployed Google Apps Script URL
-            const API_URL = 'https://script.google.com/macros/s/AKfycbyB0YyUNYBBe4LBNWSGPzXvn5zCXH9IxCe0PEOv567BY7iYdT-DGe8GuvKFUJuLl0la/exec'; 
 
-            const recordList = document.getElementById('recordList');
-            const totalHouseholdsEl = document.getElementById('totalHouseholds');
-            const totalMembersEl = document.getElementById('totalMembers');
-            const totalChildrenEl = document.getElementById('totalChildren');
-            const recordModal = document.getElementById('recordModal');
-            const closeModalBtn = document.getElementById('closeModalBtn');
-            const editBtn = document.getElementById('editBtn');
-            const deleteBtn = document.getElementById('deleteBtn');
-            const printBtn = document.getElementById('printBtn');
-            
-            // Search elements
-            const searchInput = document.getElementById('searchInput');
-            const searchBtn = document.getElementById('searchBtn');
+    <!-- Results -->
+    <div class="admin-card">
+      <h2 class="text-xl font-bold mb-4">Census Records</h2>
+      <div id="resultsContainer">
+        <div id="loadingIndicator" class="hidden flex justify-center py-8"><div class="loading"></div></div>
+        <div id="recordsList" class="space-y-6"></div>
+        <div id="noResults" class="hidden text-center text-gray-500 py-8"><p>No records found. Try a different search.</p></div>
+      </div>
+    </div>
 
-            // Modal view elements
-            const viewMode = document.getElementById('viewMode');
-            const editMode = document.getElementById('editMode');
-            const modalContent = document.getElementById('modalContent');
-            const editForm = document.getElementById('editForm');
-            const cancelEditBtn = document.getElementById('cancelEditBtn');
+    <!-- Modal -->
+    <div id="recordModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center p-4">
+      <div class="bg-white rounded-xl shadow-2xl p-6 modal-large">
+        <div class="flex justify-between items-center mb-4">
+          <h3 id="modalTitle" class="text-xl font-bold">Record Details</h3>
+          <div class="flex items-center gap-3">
+            <button id="closeModalBtn" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+          </div>
+        </div>
+        <div id="modalContent"></div>
 
-            // Message box elements
-            const messageBox = document.getElementById('messageBox');
-            const messageText = document.getElementById('messageText');
-            const confirmBtn = document.getElementById('confirmBtn');
-            const cancelBtn = document.getElementById('cancelBtn');
+        <div class="mt-6 flex gap-3">
+          <button id="printBtn" class="flex-1 px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300">
+            <i class="fa-solid fa-print mr-2"></i> Print Record
+          </button>
+          <button id="editBtn" class="px-4 py-2 bg-yellow-500 text-white font-semibold rounded-lg hover:bg-yellow-600">
+            <i class="fa-solid fa-pen-to-square mr-2"></i> Edit
+          </button>
+          <button id="deleteBtn" class="px-4 py-2 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600">
+            <i class="fa-solid fa-trash-can mr-2"></i> Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-            let currentHouseholdID = null;
+<script>
+  // *** Update this to your deployed Google Apps Script Web App URL after you deploy the script below ***
+  const API_URL = 'https://script.google.com/macros/s/AKfycbxgNJ3D1gIpEksX8lP5wLtvMto2JwCajxe9urjmA01HMFUe4vMXTFagCxVscTppoq3K/exec';
 
-            // Load data on page load
+  let currentRecord = null; // currently opened household record
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.getElementById('searchInput');
+    const searchBtn = document.getElementById('searchBtn');
+    const viewAllBtn = document.getElementById('viewAllBtn');
+    const loadingIndicator = document.getElementById('loadingIndicator');
+    const recordsList = document.getElementById('recordsList');
+    const noResults = document.getElementById('noResults');
+    const recordModal = document.getElementById('recordModal');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const modalContent = document.getElementById('modalContent');
+    const modalTitle = document.getElementById('modalTitle');
+    const printBtn = document.getElementById('printBtn');
+    const deleteBtn = document.getElementById('deleteBtn');
+    const editBtn = document.getElementById('editBtn');
+
+    const householdCountEl = document.getElementById('householdCount');
+    const memberCountEl = document.getElementById('memberCount');
+    const childCountEl = document.getElementById('childCount');
+
+    // initial load
+    fetchData();
+    fetchCounts();
+
+    searchBtn.addEventListener('click', () => {
+      const q = searchInput.value.trim();
+      fetchData(q);
+    });
+
+    viewAllBtn.addEventListener('click', () => {
+      searchInput.value = '';
+      fetchData();
+    });
+
+    closeModalBtn.addEventListener('click', () => {
+      recordModal.classList.add('hidden');
+      currentRecord = null;
+    });
+
+    printBtn.addEventListener('click', () => {
+      const printContent = document.getElementById('modalContent').innerHTML;
+      const newWin = window.open('', '_blank', 'width=800,height=600');
+      newWin.document.write(`<html><head><title>Print</title></head><body>${printContent}</body></html>`);
+      newWin.document.close();
+      newWin.print();
+    });
+
+    deleteBtn.addEventListener('click', async () => {
+      if (!currentRecord) return alert('No record selected.');
+      if (!confirm('Are you sure you want to delete this household and all associated members/children? This cannot be undone.')) return;
+      try {
+        // POST delete
+        const resp = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'delete', householdId: currentRecord.household.HouseholdID })
+        });
+        const body = await resp.json();
+        if (body.success) {
+          alert('Record deleted.');
+          recordModal.classList.add('hidden');
+          currentRecord = null;
+          fetchData(); // refresh
+          fetchCounts();
+        } else {
+          alert('Delete failed: ' + (body.error || 'unknown error'));
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Delete request failed. Check console and API deployment.');
+      }
+    });
+
+    editBtn.addEventListener('click', () => {
+      if (!currentRecord) return;
+      openEditForm(currentRecord);
+    });
+
+    async function fetchCounts() {
+      try {
+        const r = await fetch(`${API_URL}?action=getCounts`);
+        const j = await r.json();
+        if (j.counts) {
+          householdCountEl.textContent = j.counts.totalHouseholds ?? '0';
+          memberCountEl.textContent = j.counts.totalMembers ?? '0';
+          childCountEl.textContent = j.counts.totalChildren ?? '0';
+        }
+      } catch (err) {
+        console.error('Counts error', err);
+        householdCountEl.textContent = '...';
+        memberCountEl.textContent = '...';
+        childCountEl.textContent = '...';
+      }
+    }
+
+    async function fetchData(q='') {
+      loadingIndicator.classList.remove('hidden');
+      recordsList.innerHTML = '';
+      noResults.classList.add('hidden');
+
+      try {
+        const url = q ? `${API_URL}?action=search&q=${encodeURIComponent(q)}` : `${API_URL}?action=getAll`;
+        const resp = await fetch(url);
+        const data = await resp.json();
+        if (Array.isArray(data) && data.length > 0) {
+          renderRecords(data);
+          noResults.classList.add('hidden');
+        } else {
+          noResults.classList.remove('hidden');
+        }
+      } catch (err) {
+        console.error('Fetch error', err);
+        noResults.classList.remove('hidden');
+      } finally {
+        loadingIndicator.classList.add('hidden');
+      }
+    }
+
+    function renderRecords(records) {
+      recordsList.innerHTML = '';
+      records.forEach(record => {
+        const h = record.household;
+        const members = record.members || [];
+        const children = record.children || [];
+
+        const div = document.createElement('div');
+        div.className = 'admin-card hover:bg-gray-50 transition duration-300 cursor-pointer';
+        div.innerHTML = `
+          <h3 class="text-lg font-bold text-blue-600">${escapeHtml(h.BlockName || '')} - ${escapeHtml(h.ResidentialAddress || '')}</h3>
+          <p class="text-sm-condensed text-gray-500">Household ID: ${escapeHtml(h.HouseholdID || '')}</p>
+          <p class="text-gray-700 mt-2 font-semibold">Members: <span class="font-normal">${members.length}</span></p>
+          <p class="text-gray-700 font-semibold">Children: <span class="font-normal">${children.length}</span></p>
+        `;
+        div.addEventListener('click', () => showRecordDetails(record));
+        recordsList.appendChild(div);
+      });
+    }
+
+    function showRecordDetails(record) {
+      currentRecord = record;
+      const h = record.household || {};
+      const members = record.members || [];
+      const children = record.children || [];
+
+      modalTitle.textContent = `Household: ${h.HouseholdID || ''} — ${h.BlockName || ''}`;
+
+      let html = `<h4 class="text-lg font-bold text-gray-800 mb-2">Household Information</h4><ul class="list-disc list-inside space-y-1 mb-6">`;
+      // Render all household keys/values
+      for (const key in h) {
+        html += `<li><strong>${escapeHtml(key)}:</strong> ${escapeHtml(h[key])}</li>`;
+      }
+      html += `</ul>`;
+
+      if (members.length) {
+        html += `<h4 class="text-lg font-bold text-gray-800 mb-2">Members</h4><div class="space-y-4 mb-6">`;
+        members.forEach(m => {
+          html += `<div class="p-4 bg-gray-100 rounded-lg"><p class="font-semibold">${escapeHtml(m.FirstName || '')} ${escapeHtml(m.LastName || '')}</p><ul class="list-disc list-inside text-sm-condensed space-y-1 mt-2">`;
+          for (const k in m) {
+            html += `<li><strong>${escapeHtml(k)}:</strong> ${escapeHtml(m[k])}</li>`;
+          }
+          html += `</ul></div>`;
+        });
+        html += `</div>`;
+      }
+
+      if (children.length) {
+        html += `<h4 class="text-lg font-bold text-gray-800 mb-2">Children</h4><div class="space-y-4">`;
+        children.forEach(c => {
+          html += `<div class="p-4 bg-gray-100 rounded-lg"><p class="font-semibold">${escapeHtml(c.FirstName || '')} ${escapeHtml(c.LastName || '')}</p><ul class="list-disc list-inside text-sm-condensed space-y-1 mt-2">`;
+          for (const k in c) {
+            html += `<li><strong>${escapeHtml(k)}:</strong> ${escapeHtml(c[k])}</li>`;
+          }
+          html += `</ul></div>`;
+        });
+        html += `</div>`;
+      }
+
+      modalContent.innerHTML = html;
+      recordModal.classList.remove('hidden');
+    }
+
+    // Build an edit form that mirrors index.html structure but prefilled.
+    function openEditForm(record) {
+      const h = record.household || {};
+      const members = record.members || [];
+      const children = record.children || [];
+
+      modalTitle.textContent = `Edit Household: ${h.HouseholdID || ''}`;
+
+      // form start
+      let formHtml = `<form id="adminEditForm" class="space-y-6">`;
+
+      // Household Info (basic)
+      formHtml += `
+        <div class="p-4 bg-blue-50 rounded-lg">
+          <h4 class="font-bold mb-2">Household Information</h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div><label class="block font-medium">Block Name</label><input name="blockName" class="w-full border p-2 rounded" value="${escapeHtml(h.BlockName || '')}" /></div>
+            <div><label class="block font-medium">Residential Address</label><input name="residentialAddress" class="w-full border p-2 rounded" value="${escapeHtml(h.ResidentialAddress || '')}" /></div>
+            <div class="md:col-span-2"><label class="block font-medium">Contact Information</label><input name="contactInformation" class="w-full border p-2 rounded" value="${escapeHtml(h.ContactInformation || '')}" /></div>
+          </div>
+        </div>
+      `;
+
+      // Members — editable list
+      formHtml += `<div class="p-4 bg-green-50 rounded-lg"><h4 class="font-bold mb-2">Members</h4><div id="adminMembers">`;
+      members.forEach((m, idx) => {
+        formHtml += `<div class="p-3 bg-white rounded mb-3 member-item" data-idx="${idx}">
+          <div class="flex justify-between items-center mb-2"><strong>Member #${idx+1}</strong><button type="button" class="remove-member text-red-500">Remove</button></div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <div><label>First Name</label><input name="member-${idx}-firstName" class="w-full border p-2 rounded" value="${escapeHtml(m.FirstName || '')}" /></div>
+            <div><label>Last Name</label><input name="member-${idx}-lastName" class="w-full border p-2 rounded" value="${escapeHtml(m.LastName || '')}" /></div>
+            <div><label>Date of Birth</label><input name="member-${idx}-dateOfBirth" type="date" class="w-full border p-2 rounded" value="${escapeHtml(m.DateOfBirth || '')}" /></div>
+            <div><label>Catholic?</label><input name="member-${idx}-catholic" class="w-full border p-2 rounded" value="${escapeHtml(m.Catholic || '')}" /></div>
+            <!-- include other fields as hidden/simple inputs so they can be edited -->
+            ${Object.keys(m).map(k => {
+              if (['FirstName','LastName','DateOfBirth','Catholic'].includes(k)) return '';
+              return `<input type="hidden" name="member-${idx}-${escapeHtml(k)}" value="${escapeHtml(m[k])}">`;
+            }).join('')}
+          </div>
+        </div>`;
+      });
+      formHtml += `</div><div><button id="addMemberAdmin" type="button" class="mt-2 px-3 py-1 bg-green-600 text-white rounded">Add Member</button></div></div>`;
+
+      // Children
+      formHtml += `<div class="p-4 bg-red-50 rounded-lg"><h4 class="font-bold mb-2">Children</h4><div id="adminChildren">`;
+      children.forEach((c, idx) => {
+        formHtml += `<div class="p-3 bg-white rounded mb-3 child-item" data-idx="${idx}">
+          <div class="flex justify-between items-center mb-2"><strong>Child #${idx+1}</strong><button type="button" class="remove-child text-red-500">Remove</button></div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <div><label>First Name</label><input name="child-${idx}-firstName" class="w-full border p-2 rounded" value="${escapeHtml(c.FirstName || '')}" /></div>
+            <div><label>Last Name</label><input name="child-${idx}-lastName" class="w-full border p-2 rounded" value="${escapeHtml(c.LastName || '')}" /></div>
+            <div><label>Date of Birth</label><input name="child-${idx}-dateOfBirth" type="date" class="w-full border p-2 rounded" value="${escapeHtml(c.DateOfBirth || '')}" /></div>
+            <div><label>Age</label><input name="child-${idx}-age" type="number" class="w-full border p-2 rounded" value="${escapeHtml(c.Age || '')}" /></div>
+            ${Object.keys(c).map(k => {
+              if (['FirstName','LastName','DateOfBirth','Age'].includes(k)) return '';
+              return `<input type="hidden" name="child-${idx}-${escapeHtml(k)}" value="${escapeHtml(c[k])}">`;
+            }).join('')}
+          </div>
+        </div>`;
+      });
+      formHtml += `</div><div><button id="addChildAdmin" type="button" class="mt-2 px-3 py-1 bg-red-600 text-white rounded">Add Child</button></div></div>`;
+
+      // Hidden household id
+      formHtml += `<input type="hidden" name="HouseholdID" value="${escapeHtml(h.HouseholdID || '')}">`;
+
+      // Submit + cancel
+      formHtml += `<div class="flex gap-3"><button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded">Save Changes</button><button type="button" id="cancelEdit" class="px-4 py-2 bg-gray-300 rounded">Cancel</button></div>`;
+
+      formHtml += `</form>`;
+
+      modalContent.innerHTML = formHtml;
+
+      // add handlers: add/remove member/child, cancel, submit
+      document.getElementById('cancelEdit').addEventListener('click', () => {
+        // show details again
+        showRecordDetails(record);
+      });
+
+      // add member
+      document.getElementById('addMemberAdmin').addEventListener('click', () => {
+        const container = document.getElementById('adminMembers');
+        const idx = container.querySelectorAll('.member-item').length;
+        const node = document.createElement('div');
+        node.className = 'p-3 bg-white rounded mb-3 member-item';
+        node.dataset.idx = idx;
+        node.innerHTML = `<div class="flex justify-between items-center mb-2"><strong>Member #${idx+1}</strong><button type="button" class="remove-member text-red-500">Remove</button></div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <div><label>First Name</label><input name="member-${idx}-firstName" class="w-full border p-2 rounded" /></div>
+            <div><label>Last Name</label><input name="member-${idx}-lastName" class="w-full border p-2 rounded" /></div>
+            <div><label>Date of Birth</label><input name="member-${idx}-dateOfBirth" type="date" class="w-full border p-2 rounded" /></div>
+            <div><label>Catholic?</label><input name="member-${idx}-catholic" class="w-full border p-2 rounded" /></div>
+          </div>`;
+        container.appendChild(node);
+        node.querySelector('.remove-member').addEventListener('click', () => node.remove());
+      });
+
+      // remove existing members
+      document.querySelectorAll('.remove-member').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.target.closest('.member-item').remove();
+        });
+      });
+
+      // add child
+      document.getElementById('addChildAdmin').addEventListener('click', () => {
+        const container = document.getElementById('adminChildren');
+        const idx = container.querySelectorAll('.child-item').length;
+        const node = document.createElement('div');
+        node.className = 'p-3 bg-white rounded mb-3 child-item';
+        node.dataset.idx = idx;
+        node.innerHTML = `<div class="flex justify-between items-center mb-2"><strong>Child #${idx+1}</strong><button type="button" class="remove-child text-red-500">Remove</button></div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <div><label>First Name</label><input name="child-${idx}-firstName" class="w-full border p-2 rounded" /></div>
+            <div><label>Last Name</label><input name="child-${idx}-lastName" class="w-full border p-2 rounded" /></div>
+            <div><label>Date of Birth</label><input name="child-${idx}-dateOfBirth" type="date" class="w-full border p-2 rounded" /></div>
+            <div><label>Age</label><input name="child-${idx}-age" type="number" class="w-full border p-2 rounded" /></div>
+          </div>`;
+        container.appendChild(node);
+        node.querySelector('.remove-child').addEventListener('click', () => node.remove());
+      });
+
+      document.querySelectorAll('.remove-child').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.target.closest('.child-item').remove();
+        });
+      });
+
+      // Submit handler: collect structured data then POST action=update
+      document.getElementById('adminEditForm').addEventListener('submit', async (ev) => {
+        ev.preventDefault();
+        const form = ev.target;
+        // build household object
+        const fm = new FormData(form);
+        const household = {
+          HouseholdID: fm.get('HouseholdID'),
+          BlockName: fm.get('blockName'),
+          ResidentialAddress: fm.get('residentialAddress'),
+          ContactInformation: fm.get('contactInformation')
+        };
+
+        // members: collect by scanning adminMembers children
+        const members = [];
+        document.querySelectorAll('#adminMembers .member-item').forEach((el, idx) => {
+          const get = (name) => form.querySelector(`[name="${name}"]`) ? fm.get(name) : '';
+          // for known keys:
+          members.push({
+            FirstName: fm.get(`member-${idx}-firstName`) || '',
+            LastName: fm.get(`member-${idx}-lastName`) || '',
+            DateOfBirth: fm.get(`member-${idx}-dateOfBirth`) || '',
+            Catholic: fm.get(`member-${idx}-catholic`) || '',
+            // Note: any hidden fields will be included if present in the DOM with names member-{idx}-KEY
+            // Collect any additional inputs for this member:
+            ...collectPrefixedFields(fm, `member-${idx}-`)
+          });
+        });
+
+        // children:
+        const children = [];
+        document.querySelectorAll('#adminChildren .child-item').forEach((el, idx) => {
+          children.push({
+            FirstName: fm.get(`child-${idx}-firstName`) || '',
+            LastName: fm.get(`child-${idx}-lastName`) || '',
+            DateOfBirth: fm.get(`child-${idx}-dateOfBirth`) || '',
+            Age: fm.get(`child-${idx}-age`) || '',
+            ...collectPrefixedFields(fm, `child-${idx}-`)
+          });
+        });
+
+        try {
+          const resp = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'update', household, members, children })
+          });
+          const j = await resp.json();
+          if (j.success) {
+            alert('Household updated successfully.');
+            recordModal.classList.add('hidden');
+            // refresh list and counts
             fetchData();
             fetchCounts();
+          } else {
+            alert('Update failed: ' + (j.error || 'unknown error'));
+          }
+        } catch (err) {
+          console.error(err);
+          alert('Update request failed. Check console and API deployment.');
+        }
 
-            // Event listeners
-            closeModalBtn.addEventListener('click', () => recordModal.classList.add('hidden'));
-            searchBtn.addEventListener('click', searchRecords);
-            searchInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    searchRecords();
-                }
-            });
+      });
 
-            // Edit and Delete button handlers in the modal
-            editBtn.addEventListener('click', () => {
-                viewMode.classList.add('hidden');
-                editMode.classList.remove('hidden');
-                populateEditForm();
-            });
+    } // end openEditForm
 
-            cancelEditBtn.addEventListener('click', () => {
-                editMode.classList.add('hidden');
-                viewMode.classList.remove('hidden');
-            });
+    // helpers
+    function collectPrefixedFields(formData, prefix) {
+      const out = {};
+      for (const [k, v] of formData.entries()) {
+        if (k.startsWith(prefix)) {
+          const key = k.slice(prefix.length);
+          if (!['firstName','lastName','dateOfBirth','age','catholic'].includes(key.toLowerCase())) {
+            out[key] = v;
+          }
+        }
+      }
+      return out;
+    }
 
-            deleteBtn.addEventListener('click', () => {
-                showMessage("Are you sure you want to delete this record? This action cannot be undone.", () => {
-                    deleteRecord(currentHouseholdID);
-                });
-            });
+    // HTML escaping helper to avoid injection when inserting free text
+    function escapeHtml(text) {
+      if (text === null || text === undefined) return '';
+      return String(text)
+        .replaceAll('&','&amp;')
+        .replaceAll('<','&lt;')
+        .replaceAll('>','&gt;')
+        .replaceAll('"','&quot;')
+        .replaceAll("'",'&#039;');
+    }
 
-            // Handle form submission for editing a record
-            editForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                await saveEditedRecord();
-                editMode.classList.add('hidden');
-                viewMode.classList.remove('hidden');
-                recordModal.classList.add('hidden');
-            });
-
-            // Print functionality
-            printBtn.addEventListener('click', () => {
-                const printContent = document.getElementById('modalContent').innerHTML;
-                const originalContent = document.body.innerHTML;
-                document.body.innerHTML = printContent;
-                window.print();
-                document.body.innerHTML = originalContent;
-                window.location.reload(); // Reload to restore functionality
-            });
-
-            // --- FUNCTIONS ---
-            
-            function showMessage(message, onConfirm) {
-                messageText.textContent = message;
-                messageBox.classList.remove('hidden');
-
-                confirmBtn.onclick = () => {
-                    messageBox.classList.add('hidden');
-                    if (onConfirm) onConfirm();
-                };
-
-                cancelBtn.onclick = () => {
-                    messageBox.classList.add('hidden');
-                };
-            }
-
-            async function fetchData(searchQuery = '') {
-                recordList.innerHTML = '<div class="text-center"><div class="loading inline-block"></div></div>';
-                const url = searchQuery ? `${API_URL}?action=search&q=${encodeURIComponent(searchQuery)}` : `${API_URL}`;
-                try {
-                    const response = await fetch(url, { method: 'GET' });
-                    const data = await response.json();
-                    
-                    if (data.result === 'error') {
-                        recordList.innerHTML = `<div class="p-4 bg-red-200 text-red-800 rounded-lg text-center font-semibold">Error: ${data.error}</div>`;
-                        return;
-                    }
-
-                    if (data.length === 0) {
-                        recordList.innerHTML = `<div class="p-4 bg-yellow-200 text-yellow-800 rounded-lg text-center font-semibold">No records found.</div>`;
-                        return;
-                    }
-
-                    recordList.innerHTML = '';
-                    data.forEach(record => {
-                        const household = record.household;
-                        const mainMember = record.members.length > 0 ? record.members[0] : null;
-                        const recordItem = document.createElement('div');
-                        recordItem.className = "flex flex-col md:flex-row items-start md:items-center justify-between p-4 admin-card cursor-pointer hover:bg-gray-50 transition-colors";
-                        recordItem.innerHTML = `
-                            <div>
-                                <p class="text-lg font-bold">${household.BlockName || 'N/A'}</p>
-                                <p class="text-sm text-gray-600">${household.ResidentialAddress || 'N/A'}</p>
-                            </div>
-                            <div class="mt-2 md:mt-0 text-sm md:text-right">
-                                <p class="font-semibold text-gray-800">
-                                    ${mainMember ? `${mainMember.FirstName} ${mainMember.LastName}` : 'No Main Member'}
-                                </p>
-                                <p class="text-gray-500">
-                                    ${record.members.length} member(s), ${record.children.length} child(ren)
-                                </p>
-                            </div>
-                        `;
-                        recordItem.addEventListener('click', () => showRecordDetails(household.HouseholdID));
-                        recordList.appendChild(recordItem);
-                    });
-                } catch (error) {
-                    console.error('Error fetching data:', error);
-                    recordList.innerHTML = `<div class="p-4 bg-red-200 text-red-800 rounded-lg text-center font-semibold">Failed to load data. Please check the API URL.</div>`;
-                }
-            }
-            
-            async function fetchCounts() {
-                try {
-                    const response = await fetch(`${API_URL}?action=getCounts`, { method: 'GET' });
-                    const data = await response.json();
-                    totalHouseholdsEl.textContent = data.counts.totalHouseholds;
-                    totalMembersEl.textContent = data.counts.totalMembers;
-                    totalChildrenEl.textContent = data.counts.totalChildren;
-                } catch (error) {
-                    console.error('Error fetching counts:', error);
-                    totalHouseholdsEl.textContent = 'N/A';
-                    totalMembersEl.textContent = 'N/A';
-                    totalChildrenEl.textContent = 'N/A';
-                }
-            }
-            
-            async function searchRecords() {
-                const query = searchInput.value.trim();
-                fetchData(query);
-            }
-
-            async function showRecordDetails(householdId) {
-                currentHouseholdID = householdId;
-                modalContent.innerHTML = '<div class="text-center p-8"><div class="loading inline-block"></div><p class="mt-2">Loading details...</p></div>';
-                recordModal.classList.remove('hidden');
-                
-                try {
-                    const response = await fetch(`${API_URL}?action=getRecord&householdId=${encodeURIComponent(householdId)}`, { method: 'GET' });
-                    const record = await response.json();
-                    
-                    if (record.result === 'error') {
-                        modalContent.innerHTML = `<p class="p-4 bg-red-200 text-red-800 rounded-lg text-center font-semibold">Error: ${record.error}</p>`;
-                        return;
-                    }
-
-                    // Store the fetched data for editing
-                    window.currentRecordData = record;
-
-                    let content = '';
-
-                    // Household Info
-                    content += `<div class="card bg-gradient-blue text-white mb-6">
-                        <h3 class="text-xl font-semibold mb-2">Household: ${record.household.HouseholdID}</h3>
-                        <p class="text-lg"><strong>Block:</strong> ${record.household.BlockName || 'N/A'}</p>
-                        <p class="text-lg"><strong>Address:</strong> ${record.household.ResidentialAddress || 'N/A'}</p>
-                        <p class="text-lg"><strong>Contact:</strong> ${record.household.ContactInformation || 'N/A'}</p>
-                        <p class="text-sm-condensed mt-2">Submitted on: ${record.household.SubmissionTimestamp || 'N/A'}</p>
-                    </div>`;
-
-                    // Members Info
-                    if (record.members && record.members.length > 0) {
-                        content += `<div class="space-y-4">`;
-                        record.members.forEach((member, index) => {
-                            content += `<div class="card bg-gray-100 shadow-md">
-                                <h4 class="font-bold text-gray-800">Member ${index + 1}: ${member.FirstName} ${member.LastName}</h4>
-                                <div class="mt-2 text-sm text-gray-700 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                                    <p><strong>DOB:</strong> ${member.DateOfBirth || 'N/A'}</p>
-                                    <p><strong>Catholic:</strong> ${member.Catholic || 'N/A'}</p>
-                                    <p><strong>Occupation:</strong> ${member.Occupation || 'N/A'}</p>
-                                    <p><strong>Church Activities:</strong> ${member.ChurchActivities || 'N/A'}</p>
-                                    <p><strong>Leadership:</strong> ${member.Leadership || 'N/A'}</p>
-                                    <p><strong>Marital Status:</strong> ${member.MaritalStatus || 'N/A'}</p>
-                                    <p><strong>Baptised:</strong> ${member.Baptised || 'N/A'}</p>
-                                    <p><strong>First Communion:</strong> ${member.FirstCommunion || 'N/A'}</p>
-                                    <p><strong>Confirmation:</strong> ${member.Confirmation || 'N/A'}</p>
-                                    <p><strong>Dikabelo:</strong> ${member.Dikabelo || 'N/A'}</p>
-                                </div>
-                            </div>`;
-                        });
-                        content += `</div>`;
-                    }
-
-                    // Children Info
-                    if (record.children && record.children.length > 0) {
-                        content += `<h3 class="text-xl font-semibold mt-6 mb-2 text-gray-800">Children</h3><div class="space-y-4">`;
-                        record.children.forEach((child, index) => {
-                            content += `<div class="card bg-gray-100 shadow-md">
-                                <h4 class="font-bold text-gray-800">Child ${index + 1}: ${child.FirstName} ${child.LastName}</h4>
-                                <div class="mt-2 text-sm text-gray-700 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                                    <p><strong>DOB:</strong> ${child.DateOfBirth || 'N/A'}</p>
-                                    <p><strong>Age:</strong> ${child.Age || 'N/A'}</p>
-                                    <p><strong>Catholic:</strong> ${child.Catholic || 'N/A'}</p>
-                                    <p><strong>Church Activities:</strong> ${child.ChurchActivities || 'N/A'}</p>
-                                    <p><strong>Baptised:</strong> ${child.Baptised || 'N/A'}</p>
-                                    <p><strong>First Communion:</strong> ${child.FirstCommunion || 'N/A'}</p>
-                                    <p><strong>Confirmation:</strong> ${child.Confirmation || 'N/A'}</p>
-                                </div>
-                            </div>`;
-                        });
-                        content += `</div>`;
-                    }
-                    
-                    modalContent.innerHTML = content;
-                } catch (error) {
-                    console.error('Error fetching single record:', error);
-                    modalContent.innerHTML = `<p class="p-4 bg-red-200 text-red-800 rounded-lg text-center font-semibold">Failed to load record details. Please check the API URL.</p>`;
-                }
-            }
-
-            async function deleteRecord(householdId) {
-                try {
-                    const response = await fetch(API_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ action: 'delete', householdId: householdId })
-                    });
-                    const result = await response.json();
-                    if (result.result === 'success') {
-                        recordModal.classList.add('hidden');
-                        fetchData();
-                        fetchCounts();
-                    } else {
-                        showMessage(`Error: ${result.error}`, null);
-                    }
-                } catch (error) {
-                    console.error('Error deleting record:', error);
-                    showMessage('An error occurred while trying to delete the record.', null);
-                }
-            }
-
-            function populateEditForm() {
-                const record = window.currentRecordData;
-                if (!record) return;
-
-                // Populate Household fields
-                document.getElementById('editBlockName').value = record.household.BlockName || '';
-                document.getElementById('editResidentialAddress').value = record.household.ResidentialAddress || '';
-                document.getElementById('editContactInformation').value = record.household.ContactInformation || '';
-
-                // Populate Members
-                const membersContainer = document.getElementById('editMembersContainer').querySelector('div');
-                membersContainer.innerHTML = '';
-                record.members.forEach((member, index) => {
-                    membersContainer.appendChild(createMemberForm(member, index));
-                });
-                
-                // Populate Children
-                const childrenContainer = document.getElementById('editChildrenContainer').querySelector('div');
-                childrenContainer.innerHTML = '';
-                record.children.forEach((child, index) => {
-                    childrenContainer.appendChild(createChildForm(child, index));
-                });
-            }
-
-            async function saveEditedRecord() {
-                const householdData = {
-                    HouseholdID: currentHouseholdID,
-                    BlockName: document.getElementById('editBlockName').value,
-                    ResidentialAddress: document.getElementById('editResidentialAddress').value,
-                    ContactInformation: document.getElementById('editContactInformation').value,
-                };
-                
-                const membersData = [];
-                document.querySelectorAll('#editMembersContainer .card').forEach(card => {
-                    const member = {};
-                    const fields = ['FirstName', 'LastName', 'DateOfBirth', 'Catholic', 'Occupation', 'ChurchActivities', 'SolidarityMinistry', 'Leadership', 'Baptised', 'BaptismDate', 'BaptismRegistrationNo', 'ChurchOfBaptism', 'LocationOfChurch', 'FirstCommunion', 'FirstCommunionDate', 'ChurchOfFirstCommunion', 'Confirmation', 'ConfirmationDate', 'ChurchOfConfirmation', 'MaritalStatus', 'CivilCourtMarriageDate', 'ChurchMarriageDate', 'ChurchMarriagePlace', 'Divorced', 'Dikabelo', 'DateOfLastDikabelo'];
-                    fields.forEach(field => {
-                        const el = card.querySelector(`[name="${field}"]`);
-                        if (el) member[field] = el.value;
-                    });
-                    membersData.push(member);
-                });
-
-                const childrenData = [];
-                document.querySelectorAll('#editChildrenContainer .card').forEach(card => {
-                    const child = {};
-                    const fields = ['FirstName', 'LastName', 'DateOfBirth', 'Age', 'Catholic', 'ChurchActivities', 'Baptised', 'BaptismDate', 'BaptismRegistrationNo', 'ChurchOfBaptism', 'LocationOfChurch', 'FirstCommunion', 'FirstCommunionDate', 'ChurchOfFirstCommunion', 'Confirmation', 'ConfirmationDate', 'ChurchOfConfirmation'];
-                    fields.forEach(field => {
-                        const el = card.querySelector(`[name="${field}"]`);
-                        if (el) child[field] = el.value;
-                    });
-                    childrenData.push(child);
-                });
-
-                const payload = {
-                    household: householdData,
-                    members: membersData,
-                    children: childrenData,
-                };
-
-                try {
-                    const response = await fetch(API_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ action: 'edit', payload: payload })
-                    });
-                    const result = await response.json();
-                    if (result.result === 'success') {
-                        fetchData();
-                        fetchCounts();
-                        showMessage("Record updated successfully!", null);
-                    } else {
-                        showMessage(`Error: ${result.error}`, null);
-                    }
-                } catch (error) {
-                    console.error('Error saving record:', error);
-                    showMessage('An error occurred while saving the record.', null);
-                }
-            }
-
-            // --- Form Generation Functions (Copied and adapted from index.html) ---
-
-            function createMemberForm(data, index) {
-                const memberCard = document.createElement('div');
-                memberCard.className = 'card bg-gradient-green text-white relative';
-                memberCard.innerHTML = `
-                    <h3 class="text-xl font-semibold mb-4">Member ${index + 1}</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <input type="text" name="FirstName" placeholder="First Name" value="${data.FirstName}" class="input-field text-black" required>
-                        <input type="text" name="LastName" placeholder="Last Name" value="${data.LastName}" class="input-field text-black" required>
-                        <input type="date" name="DateOfBirth" placeholder="Date of Birth" value="${data.DateOfBirth}" class="input-field text-black">
-                        <select name="Catholic" class="input-field text-black">
-                            <option value="Yes" ${data.Catholic === 'Yes' ? 'selected' : ''}>Catholic</option>
-                            <option value="No" ${data.Catholic === 'No' ? 'selected' : ''}>Non-Catholic</option>
-                        </select>
-                        <input type="text" name="Occupation" placeholder="Occupation" value="${data.Occupation}" class="input-field text-black">
-                        <input type="text" name="ChurchActivities" placeholder="Church Activities" value="${data.ChurchActivities}" class="input-field text-black">
-                        <input type="text" name="SolidarityMinistry" placeholder="Solidarity Ministry" value="${data.SolidarityMinistry}" class="input-field text-black">
-                        <input type="text" name="Leadership" placeholder="Leadership Position" value="${data.Leadership}" class="input-field text-black">
-                        <select name="Baptised" class="input-field text-black">
-                            <option value="">Baptised?</option>
-                            <option value="Yes" ${data.Baptised === 'Yes' ? 'selected' : ''}>Yes</option>
-                            <option value="No" ${data.Baptised === 'No' ? 'selected' : ''}>No</option>
-                        </select>
-                        <input type="date" name="BaptismDate" placeholder="Baptism Date" value="${data.BaptismDate}" class="input-field text-black">
-                        <input type="text" name="BaptismRegistrationNo" placeholder="Baptism Reg. No." value="${data.BaptismRegistrationNo}" class="input-field text-black">
-                        <input type="text" name="ChurchOfBaptism" placeholder="Church of Baptism" value="${data.ChurchOfBaptism}" class="input-field text-black">
-                        <input type="text" name="LocationOfChurch" placeholder="Location of Church" value="${data.LocationOfChurch}" class="input-field text-black">
-                        <select name="FirstCommunion" class="input-field text-black">
-                            <option value="">First Communion?</option>
-                            <option value="Yes" ${data.FirstCommunion === 'Yes' ? 'selected' : ''}>Yes</option>
-                            <option value="No" ${data.FirstCommunion === 'No' ? 'selected' : ''}>No</option>
-                        </select>
-                        <input type="date" name="FirstCommunionDate" placeholder="First Communion Date" value="${data.FirstCommunionDate}" class="input-field text-black">
-                        <input type="text" name="ChurchOfFirstCommunion" placeholder="Church of First Communion" value="${data.ChurchOfFirstCommunion}" class="input-field text-black">
-                        <select name="Confirmation" class="input-field text-black">
-                            <option value="">Confirmation?</option>
-                            <option value="Yes" ${data.Confirmation === 'Yes' ? 'selected' : ''}>Yes</option>
-                            <option value="No" ${data.Confirmation === 'No' ? 'selected' : ''}>No</option>
-                        </select>
-                        <input type="date" name="ConfirmationDate" placeholder="Confirmation Date" value="${data.ConfirmationDate}" class="input-field text-black">
-                        <input type="text" name="ChurchOfConfirmation" placeholder="Church of Confirmation" value="${data.ChurchOfConfirmation}" class="input-field text-black">
-                        <select name="MaritalStatus" class="input-field text-black">
-                            <option value="">Marital Status</option>
-                            <option value="Single" ${data.MaritalStatus === 'Single' ? 'selected' : ''}>Single</option>
-                            <option value="Married" ${data.MaritalStatus === 'Married' ? 'selected' : ''}>Married</option>
-                            <option value="Divorced" ${data.MaritalStatus === 'Divorced' ? 'selected' : ''}>Divorced</option>
-                            <option value="Widowed" ${data.MaritalStatus === 'Widowed' ? 'selected' : ''}>Widowed</option>
-                        </select>
-                        <input type="date" name="CivilCourtMarriageDate" placeholder="Civil Court Marriage Date" value="${data.CivilCourtMarriageDate}" class="input-field text-black">
-                        <input type="date" name="ChurchMarriageDate" placeholder="Church Marriage Date" value="${data.ChurchMarriageDate}" class="input-field text-black">
-                        <input type="text" name="ChurchMarriagePlace" placeholder="Church Marriage Place" value="${data.ChurchMarriagePlace}" class="input-field text-black">
-                        <select name="Divorced" class="input-field text-black">
-                            <option value="">Divorced?</option>
-                            <option value="Yes" ${data.Divorced === 'Yes' ? 'selected' : ''}>Yes</option>
-                            <option value="No" ${data.Divorced === 'No' ? 'selected' : ''}>No</option>
-                        </select>
-                        <select name="Dikabelo" class="input-field text-black">
-                            <option value="">Dikabelo?</option>
-                            <option value="Yes" ${data.Dikabelo === 'Yes' ? 'selected' : ''}>Yes</option>
-                            <option value="No" ${data.Dikabelo === 'No' ? 'selected' : ''}>No</option>
-                        </select>
-                        <input type="date" name="DateOfLastDikabelo" placeholder="Date of Last Dikabelo" value="${data.DateOfLastDikabelo}" class="input-field text-black">
-                    </div>
-                `;
-                return memberCard;
-            }
-
-            function createChildForm(data, index) {
-                const childCard = document.createElement('div');
-                childCard.className = 'card bg-gray-100 shadow-md relative';
-                childCard.innerHTML = `
-                    <h3 class="text-xl font-semibold mb-4">Child ${index + 1}</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <input type="text" name="FirstName" placeholder="First Name" value="${data.FirstName}" class="input-field text-black" required>
-                        <input type="text" name="LastName" placeholder="Last Name" value="${data.LastName}" class="input-field text-black" required>
-                        <input type="date" name="DateOfBirth" placeholder="Date of Birth" value="${data.DateOfBirth}" class="input-field text-black">
-                        <input type="text" name="Age" placeholder="Age" value="${data.Age}" class="input-field text-black">
-                        <select name="Catholic" class="input-field text-black">
-                            <option value="Yes" ${data.Catholic === 'Yes' ? 'selected' : ''}>Catholic</option>
-                            <option value="No" ${data.Catholic === 'No' ? 'selected' : ''}>Non-Catholic</option>
-                        </select>
-                        <input type="text" name="ChurchActivities" placeholder="Church Activities" value="${data.ChurchActivities}" class="input-field text-black">
-                        <select name="Baptised" class="input-field text-black">
-                            <option value="">Baptised?</option>
-                            <option value="Yes" ${data.Baptised === 'Yes' ? 'selected' : ''}>Yes</option>
-                            <option value="No" ${data.Baptised === 'No' ? 'selected' : ''}>No</option>
-                        </select>
-                        <input type="date" name="BaptismDate" placeholder="Baptism Date" value="${data.BaptismDate}" class="input-field text-black">
-                        <input type="text" name="BaptismRegistrationNo" placeholder="Baptism Reg. No." value="${data.BaptismRegistrationNo}" class="input-field text-black">
-                        <input type="text" name="ChurchOfBaptism" placeholder="Church of Baptism" value="${data.ChurchOfBaptism}" class="input-field text-black">
-                        <input type="text" name="LocationOfChurch" placeholder="Location of Church" value="${data.LocationOfChurch}" class="input-field text-black">
-                        <select name="FirstCommunion" class="input-field text-black">
-                            <option value="">First Communion?</option>
-                            <option value="Yes" ${data.FirstCommunion === 'Yes' ? 'selected' : ''}>Yes</option>
-                            <option value="No" ${data.FirstCommunion === 'No' ? 'selected' : ''}>No</option>
-                        </select>
-                        <input type="date" name="FirstCommunionDate" placeholder="First Communion Date" value="${data.FirstCommunionDate}" class="input-field text-black">
-                        <input type="text" name="ChurchOfFirstCommunion" placeholder="Church of First Communion" value="${data.ChurchOfFirstCommunion}" class="input-field text-black">
-                        <select name="Confirmation" class="input-field text-black">
-                            <option value="">Confirmation?</option>
-                            <option value="Yes" ${data.Confirmation === 'Yes' ? 'selected' : ''}>Yes</option>
-                            <option value="No" ${data.Confirmation === 'No' ? 'selected' : ''}>No</option>
-                        </select>
-                        <input type="date" name="ConfirmationDate" placeholder="Confirmation Date" value="${data.ConfirmationDate}" class="input-field text-black">
-                        <input type="text" name="ChurchOfConfirmation" placeholder="Church of Confirmation" value="${data.ChurchOfConfirmation}" class="input-field text-black">
-                    </div>
-                `;
-                return childCard;
-            }
-        });
-    </script>
+  }); // DOMContentLoaded
+</script>
 </body>
 </html>
